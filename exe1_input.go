@@ -1,17 +1,19 @@
 package main
 
 import (
-	// "bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	// "os"
-	// "strings"
+// 	"bufio"
+// 	"os"
+// 	"strings"
 )
 
-const path = "./config.json"
-const path2 = "./config_2.json"
-const path3 = "./config_3.json"
+// const path = "./config.json"
+// const path1 = "./config_1.json"
+// const path2 = "./config_2.json"
+// const path3 = "./config_3.json"
+// const path4 = "./config_4.json"
 
 func check(e error) {
     if e != nil {
@@ -48,8 +50,6 @@ func getProduct(path string) []Data {
 	return product
 }
  
-var m = make(map[string]Data)
-
 func abc(path string, queue []Data) []Data {
 
 	products := getProduct(path)
@@ -81,9 +81,41 @@ func abc(path string, queue []Data) []Data {
 	return queue
 }
 
+
 func main()  {
 	var queue []Data
 	var queue2 []Data
+	var i int
+	var path string
+
+	for i=0; i<=8; i++{
+		
+		if i== 0 {
+			path = "./config.json"
+		} else {
+			path = "./config_" + string(i+48) + ".json"
+		}
+
+		queue = abc(path, queue)
+
+		for len(queue) > 0 {
+			temp := queue[0]
+			queue = queue[1:]   // Dequeue
+			fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+			fmt.Println("===============")
+			queue2 = append(queue2, temp)
+	
+		}
+
+		fmt.Println()
+
+		queue = queue2
+
+		for len(queue2) > 0 {
+			queue2 = queue2[1:]   // Dequeue
+		}
+
+	}
 
 	// reader := bufio.NewReader(os.Stdin)
 	// for ok := 1; ok != 2; {
@@ -93,11 +125,8 @@ func main()  {
 	// 	exe := path[len(path)-7: len(path)]
 	// 	exe = strings.TrimRight(exe, "\r\n")
 
-	// 	fmt.Println(exe)
-
 	// 	if exe == ".json" {
-	// 		queue = abc(path, queue)
-			
+	// 		queue = abc(path, queue)		
 	// 		for len(queue) > 0 {
 	// 			temp := queue[0]
 	// 			queue = queue[1:]   // Dequeue
@@ -112,43 +141,90 @@ func main()  {
 	// 	}
 	// }
 
+	// queue = abc(path, queue)
 
-	queue = abc(path, queue)
+	// for len(queue) > 0 {
+	// 	temp := queue[0]
+	// 	queue = queue[1:]   // Dequeue
+	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+	// 	fmt.Println("===============")
+	// 	queue2 = append(queue2, temp)
+	// }
+	// fmt.Println()
 
-	for len(queue) > 0 {
-		temp := queue[0]
-		queue = queue[1:]   // Dequeue
-		fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-		fmt.Println("===============")
-		queue2 = append(queue2, temp)
-	}
+	// queue = queue2
 
-	queue = queue2
+	// for len(queue2) > 0 {
+	// 	queue2 = queue2[1:]   // Dequeue
+	// }
 
-	queue = abc(path2, queue)
+	// queue = abc(path1, queue)
 
-	for len(queue) > 0 {
-		temp := queue[0]
-		queue = queue[1:]   // Dequeue
-		fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-		fmt.Println("===============")
-		queue2 = append(queue2, temp)
-	}
+	// for len(queue) > 0 {
+	// 	temp := queue[0]
+	// 	queue = queue[1:]   // Dequeue
+	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+	// 	fmt.Println("===============")
+	// 	queue2 = append(queue2, temp)
+	// }
+	// fmt.Println()
 
-	queue = queue2
+	// queue = queue2
 
-	queue = abc(path3, queue)
+	// for len(queue2) > 0 {
+	// 	queue2 = queue2[1:]   // Dequeue
+	// }
 
-	for len(queue) > 0 {
-		temp := queue[0]
-		queue = queue[1:]   // Dequeue
-		fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-		fmt.Println("===============")
-		queue2 = append(queue2, temp)
-	}
+	// queue = abc(path2, queue)
 
+	// for len(queue) > 0 {
+	// 	temp := queue[0]
+	// 	queue = queue[1:]   // Dequeue
+	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+	// 	fmt.Println("===============")
+	// 	queue2 = append(queue2, temp)
+	// }
+	// fmt.Println()
 
+	// queue = queue2
 
+	// for len(queue2) > 0 {
+	// 	queue2 = queue2[1:]   // Dequeue
+	// }
+
+	// queue = abc(path3, queue)
+
+	// for len(queue) > 0 {
+	// 	temp := queue[0]
+	// 	queue = queue[1:]   // Dequeue
+	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+	// 	fmt.Println("===============")
+	// 	queue2 = append(queue2, temp)
+	// }
+	// fmt.Println()
+
+	// queue = queue2
+
+	// for len(queue2) > 0 {
+	// 	queue2 = queue2[1:]   // Dequeue
+	// }
+
+	// queue = abc(path4, queue)
+
+	// for len(queue) > 0 {
+	// 	temp := queue[0]
+	// 	queue = queue[1:]   // Dequeue
+	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+	// 	fmt.Println("===============")
+	// 	queue2 = append(queue2, temp)
+	// }
+	// fmt.Println()
+
+	// queue = queue2
+
+	// for len(queue2) > 0 {
+	// 	queue2 = queue2[1:]   // Dequeue
+	// }
 }
 
 
