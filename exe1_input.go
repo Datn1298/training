@@ -4,21 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-// 	"bufio"
-// 	"os"
-// 	"strings"
+	"bufio"
+	"os"
+	"strings"
 )
 
-// const path = "./config.json"
-// const path1 = "./config_1.json"
-// const path2 = "./config_2.json"
-// const path3 = "./config_3.json"
-// const path4 = "./config_4.json"
-
-func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+type Instances struct {
+	Instances []Data `json:"Instances"`
 }
 
 type Data struct {
@@ -27,37 +19,68 @@ type Data struct {
 	VRam   int    `json:"vRAM"`
 	Counts int    `json:"counts"`
 	Action string
-
+	Amount int
 }
 
-type Output struct {
-	Type string
-	Action string
-	Counts int
+func Abs(numb int) int {
+	if numb > 0 {
+		return numb
+	} else {
+		return -numb
+	}
 }
 
-func getProduct(path string) []Data {
-	
-	data, err := ioutil.ReadFile(path)
+const path = "./config.json"
+const path1 = "./config_1.json"
+
+// func isJsonFile(fileName string) bool {
+// 	temp := fileName[len(fileName)-7:]
+// 	temp = strings.TrimRight(temp, "\r\n")
+// 	if strings.Compare(temp, ".json") == 0 {
+// 		return true
+// 	} else {
+// 		return false
+// 	}
+// }
+
+// func isExit(fileName string) bool {
+// 	temp := fileName[len(fileName)-5:]
+// 	if strings.Compare(temp, "Exit") == 0 {
+// 		return true
+// 	} else {
+// 		return false
+// 	}
+// }
+
+
+
+func getProduct(path string) []Instances {
+	path = strings.TrimRight(path, "\r\n")
+	jsonFile, err := os.Open(path)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 	}
 
-	data2 := data[16: len(data)-1]
+	defer jsonFile.Close()
+	
+	product := make([]Instances, 3)
 
-	product := make([]Data, 3)
-	json.Unmarshal(data2, &product)
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	json.Unmarshal(raw, &product)
 	return product
 }
  
-func abc(path string, queue []Data) []Data {
+func abc(path string, queue []Instances) []Instances {
 
-	products := getProduct(path)
-		
+	products = getProduct(path)
 	if len(queue) == 0 {
-		for i := range products {
-			queue = append(queue, products[i])
-			queue[i].Action = "a"
+		for i := range products.Instances {
+			queue = append(queue, products.Instances[i])
+			queue[i].Action = ""
 		}	
 	} else {
 		for i := range products {
@@ -67,164 +90,86 @@ func abc(path string, queue []Data) []Data {
 
 			queue = queue[1:]
 
-			if(temp.Counts < temp1.Counts){
-				temp = temp1
+			if(temp.Counts < temp1.Counts){		
 				temp.Action = "provision"
-				queue = append(queue, temp)
 			} else {
-				temp = temp1
 				temp.Action = "delete"
-				queue = append(queue, temp)
 			}
+			temp = temp1
+			temp.Amount = Abs(temp1.Counts - temp.Counts)
+			queue = append(queue, temp)
 		}	
 	}
 	return queue
 }
 
-
 func main()  {
-	var queue []Data
-	var queue2 []Data
-	var i int
-	var path string
-
-	for i=0; i<=8; i++{
-		
-		if i== 0 {
-			path = "./config.json"
-		} else {
-			path = "./config_" + string(i+48) + ".json"
-		}
-
-		queue = abc(path, queue)
-
-		for len(queue) > 0 {
-			temp := queue[0]
-			queue = queue[1:]   // Dequeue
-			fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-			fmt.Println("===============")
-			queue2 = append(queue2, temp)
+	var queue []Instances
+	var queue2 []Instances
 	
-		}
+	queue = abc(path, queue)
 
-		fmt.Println()
-
-		queue = queue2
-
-		for len(queue2) > 0 {
-			queue2 = queue2[1:]   // Dequeue
-		}
-
+	for len(queue) > 0 {
+		temp := queue[0]
+		queue = queue[1:]   // Dequeue
+		fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+		fmt.Println("===============")
+		queue2 = append(queue2, temp)
+	}
+	fmt.Println()
+	queue = queue2
+	for len(queue2) > 0 {
+		queue2 = queue2[1:]   // Dequeue
 	}
 
+	queue = abc(path2, queue)
+
+	for len(queue) > 0 {
+		temp := queue[0]
+		queue = queue[1:]   // Dequeue
+		fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
+		fmt.Println("===============")
+		queue2 = append(queue2, temp)
+	}
+	fmt.Println()
+	queue = queue2
+	for len(queue2) > 0 {
+		queue2 = queue2[1:]   // Dequeue
+	}
+}
+
 	// reader := bufio.NewReader(os.Stdin)
-	// for ok := 1; ok != 2; {
+	// for exit := 1; exit != 2; {
 	// 	fmt.Print("Enter path: ")
 	// 	path, _ := reader.ReadString('\n')
 
-	// 	exe := path[len(path)-7: len(path)]
-	// 	exe = strings.TrimRight(exe, "\r\n")
+	// 	if isExit(path) {
+	// 		exit = 2
+	// 		break
+	// 	} else {
+	// 		if isJsonFile(path) {
+	// 			queue = abc(path, queue)
 
-	// 	if exe == ".json" {
-	// 		queue = abc(path, queue)		
-	// 		for len(queue) > 0 {
-	// 			temp := queue[0]
-	// 			queue = queue[1:]   // Dequeue
-	// 			fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 			fmt.Println("===============")
-	// 			queue2 = append(queue2, temp)
+	// 			for len(queue) > 0 {
+	// 				temp := queue[0]
+	// 				queue = queue[1:]   // Dequeue
+	// 				fmt.Println(temp.Type , " " , temp.Action , " " , temp.Amount)
+	// 				fmt.Println("===============")
+	// 				queue2 = append(queue2, temp)
+
+	// 				fmt.Println()
+
+	// 				queue = queue2
+
+	// 				for len(queue2) > 0 {
+	// 					queue2 = queue2[1:]   // Dequeue
+	// 				}
+	// 			}
+	// 		} else {
+	// 			fmt.Println("Invalid file! Enter path again: ")
 	// 		}
 
-	// 		queue = queue2
-	// 	} else {
-	// 		fmt.Println("Invalid file! Enter path again: ")
 	// 	}
 	// }
-
-	// queue = abc(path, queue)
-
-	// for len(queue) > 0 {
-	// 	temp := queue[0]
-	// 	queue = queue[1:]   // Dequeue
-	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 	fmt.Println("===============")
-	// 	queue2 = append(queue2, temp)
-	// }
-	// fmt.Println()
-
-	// queue = queue2
-
-	// for len(queue2) > 0 {
-	// 	queue2 = queue2[1:]   // Dequeue
-	// }
-
-	// queue = abc(path1, queue)
-
-	// for len(queue) > 0 {
-	// 	temp := queue[0]
-	// 	queue = queue[1:]   // Dequeue
-	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 	fmt.Println("===============")
-	// 	queue2 = append(queue2, temp)
-	// }
-	// fmt.Println()
-
-	// queue = queue2
-
-	// for len(queue2) > 0 {
-	// 	queue2 = queue2[1:]   // Dequeue
-	// }
-
-	// queue = abc(path2, queue)
-
-	// for len(queue) > 0 {
-	// 	temp := queue[0]
-	// 	queue = queue[1:]   // Dequeue
-	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 	fmt.Println("===============")
-	// 	queue2 = append(queue2, temp)
-	// }
-	// fmt.Println()
-
-	// queue = queue2
-
-	// for len(queue2) > 0 {
-	// 	queue2 = queue2[1:]   // Dequeue
-	// }
-
-	// queue = abc(path3, queue)
-
-	// for len(queue) > 0 {
-	// 	temp := queue[0]
-	// 	queue = queue[1:]   // Dequeue
-	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 	fmt.Println("===============")
-	// 	queue2 = append(queue2, temp)
-	// }
-	// fmt.Println()
-
-	// queue = queue2
-
-	// for len(queue2) > 0 {
-	// 	queue2 = queue2[1:]   // Dequeue
-	// }
-
-	// queue = abc(path4, queue)
-
-	// for len(queue) > 0 {
-	// 	temp := queue[0]
-	// 	queue = queue[1:]   // Dequeue
-	// 	fmt.Println(temp.Type , " " , temp.Action , " " , temp.Counts)
-	// 	fmt.Println("===============")
-	// 	queue2 = append(queue2, temp)
-	// }
-	// fmt.Println()
-
-	// queue = queue2
-
-	// for len(queue2) > 0 {
-	// 	queue2 = queue2[1:]   // Dequeue
-	// }
-}
 
 
