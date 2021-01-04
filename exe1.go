@@ -12,6 +12,7 @@ import (
 type Instance struct {
 	Instance []Product `json:"Instances"`
 }
+
 type Product struct {
 	Type   string `json:"type"`
 	VCPU   int    `json:"vCPU"`
@@ -38,6 +39,12 @@ func isExit(fileName string) bool {
 	}
 }
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func readData(fileName string) *Instance {
 	fileName = strings.TrimRight(fileName, "\r\n")
 	jsonFile, err := os.Open(fileName)
@@ -57,24 +64,70 @@ func readData(fileName string) *Instance {
 	return &instance
 }
 
-func printProduct(instance *Instance) {
-	for i := 0; i < len(instance.Instance); i++ {
-		fmt.Print("Type: ", instance.Instance[i].Type)
-		fmt.Print(" vCPU: ", instance.Instance[i].VCPU)
-		fmt.Print(" vRam: ", instance.Instance[i].VRam)
-		fmt.Print(" counts: ", instance.Instance[i].Counts)
-		fmt.Print("\n")
-	}
-	fmt.Print("\n")
-}
+// func getData(fileName string) []Instance {
+// 	fileName = strings.TrimRight(fileName, "\r\n")
 
-var check bool
+// 	instance := make([]Instance, 3)
+
+// 	dat, err := ioutil.ReadFile(fileName)
+// 	check(err)
+// 	fmt.Print(string(dat))
+
+// 	json.Unmarshal(dat, instance)
+// 	return instance
+
+// }
+
+// func Abs(numb int) int {
+// 	if numb > 0 {
+// 		return numb
+// 	} else {
+// 		return -numb
+// 	}
+// }
+
+// func processData(path string, queue []Instance) []Instance {
+// 	product := getData(path)
+
+// 	fmt.Println(product)
+
+// 	if len(product) == 0 {
+// 		for i := range product {
+// 			queue = append(queue, product.Instance[i].Type)
+// 			queue[i].Action = ""
+// 		}
+// 	} else {
+// 		for i := range product {
+// 			temp1 := product[i]
+
+// 			temp := queue[0]
+
+// 			queue = queue[1:]
+
+// 			if temp.Counts < temp1.Counts {
+// 				temp.Action = "provision"
+// 			} else {
+// 				temp.Action = "delete"
+// 			}
+// 			temp = temp1
+// 			temp.Amount = Abs(temp1.Counts - temp.Counts)
+// 			queue = append(queue, temp)
+
+// 		}
+// 	}
+// }
 
 func main() {
+
+	var check bool
+
 	check = false
 	var oldInstance *Instance
 	var newInstance *Instance
-	//var quere []Instance
+
+	// var quere []Instance
+	// var quere2 []Instance
+
 	reader := bufio.NewReader(os.Stdin)
 	for exit := 1; exit != 2; {
 		fmt.Print("Enter path: ")
@@ -88,8 +141,7 @@ func main() {
 				if check {
 					oldInstance = newInstance
 					newInstance = readData(path)
-					printProduct(oldInstance)
-					printProduct(newInstance)
+
 					for i := 0; i < len(newInstance.Instance); i++ {
 						temp := newInstance.Instance[i].Counts - oldInstance.Instance[i].Counts
 						if temp >= 0 {
@@ -98,9 +150,23 @@ func main() {
 							fmt.Println("["+oldInstance.Instance[i].Type+"]"+" [delete] [", -temp, "]")
 						}
 					}
+
+					// quere = processData(path, quere)
+					// for len(queue) > 0 {
+					// 	temp := queue[0]
+					// 	queue = queue[1:] // Dequeue
+					// 	fmt.Println(temp.Type, " ", temp.Action, " ", temp.Counts)
+					// 	fmt.Println("===============")
+					// 	queue2 = append(queue2, temp)
+					// }
+
+					// fmt.Println()
+					// queue = queue2
+					// for len(queue2) > 0 {
+					// 	queue2 = queue2[1:] // Dequeue
+					// }
 				} else {
 					newInstance = readData(path)
-					printProduct(newInstance)
 					check = true
 				}
 
