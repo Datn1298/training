@@ -1,179 +1,103 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 )
 
 type Instance struct {
-	Instance []Product `json:"Instances"`
+	VCPU   float64 `json:"vCPU"`
+	VRAM   float64 `json:"vRAM"`
+	Counts float64 `json:"counts"`
 }
 
-type Product struct {
-	Type   string `json:"type"`
-	VCPU   int    `json:"vCPU"`
-	VRam   int    `json:"vRam"`
-	Counts int    `json:"counts"`
-}
-
+// ktra input dau vao co phai file json
 func isJsonFile(fileName string) bool {
-	temp := fileName[len(fileName)-7:]
-	temp = strings.TrimRight(temp, "\r\n")
-	if strings.Compare(temp, ".json") == 0 {
+	if strings.HasSuffix(fileName, ".json") {
 		return true
 	} else {
 		return false
 	}
 }
 
+// ktra input dau vao co phai exit
 func isExit(fileName string) bool {
-	temp := fileName[len(fileName)-5:]
-	if strings.Compare(temp, "Exit") == 0 {
+	if strings.HasPrefix(fileName, "Exit") {
 		return true
 	} else {
 		return false
 	}
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+// nhap input dau vao
+func inputFilePath() string {
+	var fileName string
+	fmt.Print("Enter config path: ")
+	fmt.Scanln(&fileName)
+
+	if !isJsonFile(fileName) {
+		fmt.Print("Invalid file, enter path: ")
+		fmt.Scanln(&fileName)
 	}
+
+	return fileName
 }
 
-func readData(fileName string) *Instance {
-	fileName = strings.TrimRight(fileName, "\r\n")
-	jsonFile, err := os.Open(fileName)
+// doc file
+func readFile(path string) ([]byte, error) {
+	dat, err := ioutil.ReadFile(path)
 	if err != nil {
-		//fmt.Println("Error!")
 		fmt.Println(err)
 	}
-	defer jsonFile.Close()
-	//instance := make([]Instance, 3)
-	var instance Instance
-	raw, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	json.Unmarshal(raw, &instance)
-	return &instance
+	return dat, err
 }
 
-// func getData(fileName string) []Instance {
-// 	fileName = strings.TrimRight(fileName, "\r\n")
+func process() {
 
-// 	instance := make([]Instance, 3)
+	var path string
+	var result map[string]interface{}
+	rs1 := make(map[string]Instance)
 
-// 	dat, err := ioutil.ReadFile(fileName)
-// 	check(err)
-// 	fmt.Print(string(dat))
-
-// 	json.Unmarshal(dat, instance)
-// 	return instance
-
-// }
-
-// func Abs(numb int) int {
-// 	if numb > 0 {
-// 		return numb
-// 	} else {
-// 		return -numb
-// 	}
-// }
-
-// func processData(path string, queue []Instance) []Instance {
-// 	product := getData(path)
-
-// 	fmt.Println(product)
-
-// 	if len(product) == 0 {
-// 		for i := range product {
-// 			queue = append(queue, product.Instance[i].Type)
-// 			queue[i].Action = ""
-// 		}
-// 	} else {
-// 		for i := range product {
-// 			temp1 := product[i]
-
-// 			temp := queue[0]
-
-// 			queue = queue[1:]
-
-// 			if temp.Counts < temp1.Counts {
-// 				temp.Action = "provision"
-// 			} else {
-// 				temp.Action = "delete"
-// 			}
-// 			temp = temp1
-// 			temp.Amount = Abs(temp1.Counts - temp.Counts)
-// 			queue = append(queue, temp)
-
-// 		}
-// 	}
-// }
-
-func main() {
-
-	var check bool
-
-	check = false
-	var oldInstance *Instance
-	var newInstance *Instance
-
-	// var quere []Instance
-	// var quere2 []Instance
-
-	reader := bufio.NewReader(os.Stdin)
-	for exit := 1; exit != 2; {
-		fmt.Print("Enter path: ")
-		path, _ := reader.ReadString('\n')
+	check := true
+	for check {
+		path = inputFilePath()
 		if isExit(path) {
-			exit = 2
+			check = false
 			break
-		} else {
-			if isJsonFile(path) {
-				//readData(path)
-				if check {
-					oldInstance = newInstance
-					newInstance = readData(path)
+		}
+		data, _ := ioutil.ReadFile(path)
+		json.Unmarshal(data, &result)
+		if len(rs1) == 0 {
+			for _, v := range result["Instances"].([]interface{}) {
+				instance := v.(map[string]interface{})
 
-					for i := 0; i < len(newInstance.Instance); i++ {
-						temp := newInstance.Instance[i].Counts - oldInstance.Instance[i].Counts
-						if temp >= 0 {
-							fmt.Println("[\""+oldInstance.Instance[i].Type+"\"]"+" [provision] [", temp, "]")
-						} else {
-							fmt.Println("["+oldInstance.Instance[i].Type+"]"+" [delete] [", -temp, "]")
-						}
-					}
-
-					// quere = processData(path, quere)
-					// for len(queue) > 0 {
-					// 	temp := queue[0]
-					// 	queue = queue[1:] // Dequeue
-					// 	fmt.Println(temp.Type, " ", temp.Action, " ", temp.Counts)
-					// 	fmt.Println("===============")
-					// 	queue2 = append(queue2, temp)
-					// }
-
-					// fmt.Println()
-					// queue = queue2
-					// for len(queue2) > 0 {
-					// 	queue2 = queue2[1:] // Dequeue
-					// }
-				} else {
-					newInstance = readData(path)
-					check = true
+				rs1[instance["type"].(string)] = Instance{
+					instance["vCPU"].(float64),
+					instance["vRam"].(float64),
+					instance["counts"].(float64),
 				}
+			}
 
-			} else {
-				fmt.Println("Invalid file! Enter path again: ")
+		} else {
+			for _, v := range result["Instances"].([]interface{}) {
+				instance := v.(map[string]interface{})
+				type1 := instance["type"].(string)
+				elem, ok := rs1[type1]
+				if ok {
+					if elem.Counts < instance["counts"].(float64) {
+						fmt.Println("[", instance["type"], "] \t", " [ Provision ] \t ", "[", instance["counts"].(float64)-elem.Counts, "]")
+					} else {
+						fmt.Println("[", instance["type"], "] \t", " [ Delete ] \t ", "[", elem.Counts-instance["counts"].(float64), "]")
+					}
+					elem.Counts = instance["counts"].(float64)
+				}
 			}
 		}
 	}
+}
 
+func main() {
+	process()
 }
